@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "849237336176",
+    "firebase_url": "https://simons-xlfl-x-imdp-147cb-default-rtdb.firebaseio.com",
+    "project_id": "simons-xlfl-x-imdp-147cb",
+    "storage_bucket": "simons-xlfl-x-imdp-147cb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849237336176:android:63ec15c226daf0f30594b5",
+        "android_client_info": {
+          "package_name": "com.iot.simons"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "849237336176-53k0ihl94i0um14u17p4qv1fidajn2k4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.iot.simons",
+            "certificate_hash": "ddcf68878974a6cc8769e6a3bf5ffa35bba271b7"
+          }
+        },
+        {
+          "client_id": "849237336176-hfcf8bb04jvaueeqj2eqrntdk6musrv0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkOST6En4QX78-BvhdByI7_MbaqbNEiqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "849237336176-hfcf8bb04jvaueeqj2eqrntdk6musrv0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
