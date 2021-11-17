@@ -15,6 +15,7 @@ class _AeratorControlPageState extends State<AeratorControlPage>
     with SingleTickerProviderStateMixin {
   final dbRef = FirebaseDatabase.instance.reference();
   bool value = true;
+  String status = '';
   int hitung = 0;
   Color color = Colors.grey;
   bool _buttonVisibility = true;
@@ -30,7 +31,10 @@ class _AeratorControlPageState extends State<AeratorControlPage>
   sampleFunction() {
     if (isEnabled == false) {
       return 'wait';
-    } else if (value == true)
+    }
+    // else
+    //   return status;
+    else if (value == true)
       return 'on';
     else
       return 'off';
@@ -42,6 +46,12 @@ class _AeratorControlPageState extends State<AeratorControlPage>
     dbRef.child("Control2").update({"switch": value ? 'ON' : 'OFF'});
   }
 
+  Future<void> readData() async {
+    dbRef.child("Control2").once().then((DataSnapshot snapshot) {
+      value = snapshot.value['switch'];
+    });
+  }
+
   // readEsp() async {
   //   dbRef.child("AeratorControl2").once().then((DataSnapshot snapshot) {
   //     var esp32 = snapshot.value['esp32'];
@@ -51,6 +61,7 @@ class _AeratorControlPageState extends State<AeratorControlPage>
 
   @override
   Widget build(BuildContext context) {
+    readData();
     Widget header() {
       return Container(
           margin: EdgeInsets.only(
@@ -159,21 +170,28 @@ class _AeratorControlPageState extends State<AeratorControlPage>
                           //   eventUpdate();
                           // },
                           elevation: 7.0,
-                          fillColor: value ? kGreen2Color : kWhiteColor,
+                          fillColor:
+                              snapshot.data.snapshot.value['switch'] == 'ON'
+                                  ? kGreen2Color
+                                  : kWhiteColor,
                           child: Column(
                             children: [
                               Icon(
                                 MyFlutterApp.drop,
                                 size: 60,
-                                color: value ? kWhiteColor : kGreen2Color,
+                                color: snapshot.data.snapshot.value['switch'] == 'ON'
+                                    ? kWhiteColor
+                                    : kGreen2Color,
                               ),
                               Text(
-                                // value ? sampleFunction() : 'off',
-                                sampleFunction(),
-                                style: value
+                                isEnabled
+                                    ? snapshot.data.snapshot.value['switch']
+                                    : 'wait',
+                                // sampleFunction(),
+                                style: snapshot.data.snapshot.value['switch'] == 'ON'
                                     ? whiteTextStyle.copyWith(
                                         fontSize: 18,
-                                        fontWeight: medium,
+                                        fontWeight: regular,
                                       )
                                     : greenTextStyle.copyWith(
                                         fontSize: 18,
@@ -251,12 +269,6 @@ class _AeratorControlPageState extends State<AeratorControlPage>
         ),
       );
     }
-
-    // Future<void> readData() async {
-    //   dbRef.child("Data").once().then((DataSnapshot snapshot) {
-    //     print(snapshot.value);
-    //   });
-    // }
 
     return SafeArea(
       child: Scaffold(

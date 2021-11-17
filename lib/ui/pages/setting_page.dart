@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:simons/cubit/auth_cubit.dart';
 import 'package:simons/cubit/page_cubit.dart';
 import 'package:simons/shared/theme.dart';
-import 'package:simons/ui/widgets/custom_button.dart';
 import 'package:simons/ui/widgets/custom_button2.dart';
 
 class SettingPage extends StatelessWidget {

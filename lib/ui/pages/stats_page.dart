@@ -8,6 +8,15 @@ import 'package:simons/shared/theme.dart';
 import 'package:simons/ui/widgets/another_sensor_card.dart';
 import 'package:simons/ui/widgets/chart_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
+import 'dart:developer';
+
+List<Color> gradientColors = [kGreenColor];
+List<double> dataSensorList = [];
+List<FlSpot> spotSensorList = [];
+List<FlSpot> removedSensorList = [];
+final dbRef = FirebaseDatabase.instance.reference();
+double data = 0.0;
 
 _launchURL() async {
   const url = 'https://bit.ly/SIMONS_DataSensor';
@@ -18,259 +27,42 @@ _launchURL() async {
   }
 }
 
+bool isStopped = false; //global
+
+Future<void> readData() async {
+  dbRef.child("Test").once().then((DataSnapshot snapshot) {
+    data = snapshot.value['Sensor'].toDouble();
+    dataSensorList.add(data);
+    double dataSensorListLength = (dataSensorList.length - 1).toDouble();
+    spotSensorList.add(FlSpot(
+        dataSensorListLength, dataSensorList[dataSensorListLength.toInt()]));
+  });
+  if (dataSensorList.length >= 24) {
+    spotSensorList.clear();
+    dataSensorList.clear();
+  }
+  log('spotSensorList, $spotSensorList');
+  log('spotSensorList.length, ${spotSensorList.length}');
+  log('dataSensorList, $dataSensorList');
+  log('dataSensorList.length, ${dataSensorList.length}');
+}
+
 class StatsPage extends StatefulWidget {
   @override
   _StatsPageState createState() => _StatsPageState();
 }
 
 class _StatsPageState extends State<StatsPage> {
-  int activeDay = 3;
-
-  bool showAvg = false;
-  @override
-
-//   Widget getBody() {
-//     var size = MediaQuery.of(context).size;
-
-//     List expenses = [
-//       {
-//         "icon": Icons.arrow_back,
-//         "color": blue,
-//         "label": "Income",
-//         "cost": "\$6593.75"
-//       },
-//       {
-//         "icon": Icons.arrow_forward,
-//         "color": red,
-//         "label": "Expense",
-//         "cost": "\$2645.50"
-//       }
-//     ];
-//     return SingleChildScrollView(
-//       child: Column(
-//         children: [
-//           Container(
-//             decoration: BoxDecoration(color: white, boxShadow: [
-//               BoxShadow(
-//                 color: grey.withOpacity(0.01),
-//                 spreadRadius: 10,
-//                 blurRadius: 3,
-//                 // changes position of shadow
-//               ),
-//             ]),
-//             child: Padding(
-//               padding: const EdgeInsets.only(
-//                   top: 60, right: 20, left: 20, bottom: 25),
-//               child: Column(
-//                 children: [
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     children: [
-//                       Text(
-//                         "Stats",
-//                         style: TextStyle(
-//                             fontSize: 20,
-//                             fontWeight: FontWeight.bold,
-//                             color: black),
-//                       ),
-//                     ],
-//                   ),
-//                   SizedBox(
-//                     height: 25,
-//                   ),
-//                   Row(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: List.generate(months.length, (index) {
-//                         return GestureDetector(
-//                           onTap: () {
-//                             setState(() {
-//                               activeDay = index;
-//                             });
-//                           },
-//                           child: Container(
-//                             width: (MediaQuery.of(context).size.width - 40) / 6,
-//                             child: Column(
-//                               children: [
-//                                 Text(
-//                                   months[index]['label'],
-//                                   style: TextStyle(fontSize: 10),
-//                                 ),
-//                                 SizedBox(
-//                                   height: 10,
-//                                 ),
-//                                 Container(
-//                                   decoration: BoxDecoration(
-//                                       color: activeDay == index
-//                                           ? primary
-//                                           : black.withOpacity(0.02),
-//                                       borderRadius: BorderRadius.circular(5),
-//                                       border: Border.all(
-//                                           color: activeDay == index
-//                                               ? primary
-//                                               : black.withOpacity(0.1))),
-//                                   child: Padding(
-//                                     padding: const EdgeInsets.only(
-//                                         left: 12, right: 12, top: 7, bottom: 7),
-//                                     child: Text(
-//                                       months[index]['day'],
-//                                       style: TextStyle(
-//                                           fontSize: 10,
-//                                           fontWeight: FontWeight.w600,
-//                                           color: activeDay == index
-//                                               ? white
-//                                               : black),
-//                                     ),
-//                                   ),
-//                                 )
-//                               ],
-//                             ),
-//                           ),
-//                         );
-//                       }
-//                     )
-//                   )
-//                 ],
-//               ),
-//             ),
-//           ),
-//           SizedBox(
-//             height: 20,
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.only(left: 20, right: 20),
-//             child: Container(
-//               width: double.infinity,
-//               height: 250,
-//               decoration: BoxDecoration(
-//                   color: white,
-//                   borderRadius: BorderRadius.circular(12),
-//                   boxShadow: [
-//                     BoxShadow(
-//                       color: grey.withOpacity(0.01),
-//                       spreadRadius: 10,
-//                       blurRadius: 3,
-//                       // changes position of shadow
-//                     ),
-//                   ]),
-//               child: Padding(
-//                 padding: EdgeInsets.all(10),
-//                 child: Stack(
-//                   children: [
-//                     Padding(
-//                       padding: const EdgeInsets.only(
-//                         top: 10,
-//                       ),
-//                       child: Column(
-//                         crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           Text(
-//                             "Net balance",
-//                             style: TextStyle(
-//                                 fontWeight: FontWeight.w500,
-//                                 fontSize: 13,
-//                                 color: Color(0xff67727d)),
-//                           ),
-//                           SizedBox(
-//                             height: 10,
-//                           ),
-//                           Text(
-//                             "\$2446.90",
-//                             style: TextStyle(
-//                               fontWeight: FontWeight.bold,
-//                               fontSize: 25,
-//                             ),
-//                           )
-//                         ],
-//                       ),
-//                     ),
-//                     Positioned(
-//                       bottom: 0,
-//                       child: Container(
-//                         width: (size.width - 20),
-//                         height: 150,
-//                         child: LineChart(
-//                           mainData(),
-//                         ),
-//                       ),
-//                     )
-//                   ],
-//                 ),
-//               ),
-//             ),
-//           ),
-//           SizedBox(
-//             height: 20,
-//           ),
-//           Wrap(
-//               spacing: 20,
-//               children: List.generate(expenses.length, (index) {
-//                 return Container(
-//                   width: (size.width - 60) / 2,
-//                   height: 170,
-//                   decoration: BoxDecoration(
-//                       color: white,
-//                       borderRadius: BorderRadius.circular(12),
-//                       boxShadow: [
-//                         BoxShadow(
-//                           color: grey.withOpacity(0.01),
-//                           spreadRadius: 10,
-//                           blurRadius: 3,
-//                           // changes position of shadow
-//                         ),
-//                       ]),
-//                   child: Padding(
-//                     padding: const EdgeInsets.only(
-//                         left: 25, right: 25, top: 20, bottom: 20),
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         Container(
-//                           width: 40,
-//                           height: 40,
-//                           decoration: BoxDecoration(
-//                               shape: BoxShape.circle,
-//                               color: expenses[index]['color']),
-//                           child: Center(
-//                               child: Icon(
-//                             expenses[index]['icon'],
-//                             color: white,
-//                           )),
-//                         ),
-//                         Column(
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           children: [
-//                             Text(
-//                               expenses[index]['label'],
-//                               style: TextStyle(
-//                                   fontWeight: FontWeight.w500,
-//                                   fontSize: 13,
-//                                   color: Color(0xff67727d)),
-//                             ),
-//                             SizedBox(
-//                               height: 8,
-//                             ),
-//                             Text(
-//                               expenses[index]['cost'],
-//                               style: TextStyle(
-//                                 fontWeight: FontWeight.bold,
-//                                 fontSize: 20,
-//                               ),
-//                             )
-//                           ],
-//                         )
-//                       ],
-//                     ),
-//                   ),
-//                 );
-//               }))
-//         ],
-//       ),
-//     );
-//   }
-// }
-
   final databaseReference = FirebaseDatabase.instance.reference();
+
+  @override
+  void initState() {
+    Timer.periodic(Duration(hours: 1), (t) {
+      log('print timer');
+      readData();
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -315,10 +107,6 @@ class _StatsPageState extends State<StatsPage> {
               Container(
                 width: 50,
                 height: 52,
-                // decoration: BoxDecoration(
-                //   image: DecorationImage(
-                //       image: AssetImage('assets/images/simons_logo2.png')),
-                // ),
                 child: InkWell(
                   onTap: () {
                     Navigator.pushNamed(context, '/setting');
@@ -334,6 +122,9 @@ class _StatsPageState extends State<StatsPage> {
     }
 
     Widget stackCard() {
+      //Graph
+
+      // oneHourTimer();
       return Container(
           margin: EdgeInsets.only(
             top: 40,
@@ -445,8 +236,171 @@ class _StatsPageState extends State<StatsPage> {
                                   width: 300,
                                   height: 170,
                                   child: LineChart(
-                                    mainData(),
-                                  ),
+                                      LineChartData(
+                                        lineTouchData: LineTouchData(
+                                          enabled: true,
+                                          touchTooltipData:
+                                              LineTouchTooltipData(
+                                                  tooltipBgColor:
+                                                      Colors.green[500],
+                                                  getTooltipItems:
+                                                      (List<LineBarSpot>
+                                                          touchedBarSpots) {
+                                                    return touchedBarSpots
+                                                        .map((barSpot) {
+                                                      final flSpot = barSpot;
+                                                      return LineTooltipItem(
+                                                        '${spotSensorList[flSpot.x.toInt()]}',
+                                                        const TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      );
+                                                    }).toList();
+                                                  }),
+                                        ),
+                                        gridData: FlGridData(
+                                            show: false,
+                                            drawHorizontalLine: false,
+                                            getDrawingHorizontalLine: (value) {
+                                              return FlLine(
+                                                color: kGreenColor,
+                                                strokeWidth: 0.1,
+                                              );
+                                            }),
+                                        titlesData: FlTitlesData(
+                                          show: true,
+                                          bottomTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 22,
+                                            getTextStyles: (context, value) =>
+                                                const TextStyle(
+                                                    color: Color(0xff68737d),
+                                                    fontSize: 12),
+                                            getTitles: (value) {
+                                              switch (value.toInt()) {
+                                                case 0:
+                                                  return '0';
+                                                case 1:
+                                                  return '1';
+                                                case 2:
+                                                  return '2';
+                                                case 3:
+                                                  return '3';
+                                                case 4:
+                                                  return '4';
+                                                case 5:
+                                                  return '5';
+                                                case 6:
+                                                  return '6';
+                                                case 7:
+                                                  return '7';
+                                                case 8:
+                                                  return '8';
+                                                case 9:
+                                                  return '9';
+                                                case 10:
+                                                  return '10';
+                                                case 11:
+                                                  return '11';
+                                                case 12:
+                                                  return '12';
+                                                case 13:
+                                                  return '13';
+                                                case 14:
+                                                  return '14';
+                                                case 15:
+                                                  return '15';
+                                                case 16:
+                                                  return '16';
+                                                case 17:
+                                                  return '17';
+                                                case 18:
+                                                  return '18';
+                                                case 19:
+                                                  return '19';
+                                                case 20:
+                                                  return '20';
+                                                case 21:
+                                                  return '21';
+                                                case 22:
+                                                  return '22';
+                                                case 23:
+                                                  return '23';
+                                                case 24:
+                                                  return '24';
+                                              }
+                                              return 'e';
+                                            },
+                                            margin: 8,
+                                          ),
+                                          leftTitles: SideTitles(
+                                            showTitles: true,
+                                            getTextStyles: (context, value) =>
+                                                const TextStyle(
+                                                    color: Color(0xff67727d),
+                                                    fontSize: 12),
+                                            getTitles: (value) {
+                                              switch (value.toInt()) {
+                                                case 1:
+                                                  return '10k';
+                                                case 3:
+                                                  return '50k';
+                                                case 5:
+                                                  return '70k';
+                                                case 7:
+                                                  return '70k';
+                                                case 17:
+                                                  return '70k';
+                                              }
+                                              return '';
+                                            },
+                                            reservedSize: 28,
+                                            margin: 3,
+                                          ),
+                                          rightTitles:
+                                              SideTitles(showTitles: false),
+                                          topTitles:
+                                              SideTitles(showTitles: false),
+                                        ),
+                                        borderData: FlBorderData(
+                                          show: false,
+                                        ),
+                                        minX: 0,
+                                        maxX: 24,
+                                        minY: 0,
+                                        maxY: 6,
+                                        lineBarsData: [
+                                          LineChartBarData(
+                                            spots: spotSensorList,
+                                            // spots: [
+                                            //   FlSpot(0, 3),
+                                            //   FlSpot(2.6, 2),
+                                            //   FlSpot(4.9, 5),
+                                            //   FlSpot(6.8, 3.1),
+                                            //   FlSpot(8, 4),
+                                            //   FlSpot(9.5, 3),
+                                            //   FlSpot(11, 4),
+                                            // ],
+                                            isCurved: false,
+                                            colors: gradientColors,
+                                            barWidth: 3,
+                                            isStrokeCapRound: true,
+                                            dotData: FlDotData(
+                                              show: false,
+                                            ),
+                                            belowBarData: BarAreaData(
+                                              show: true,
+                                              colors: gradientColors
+                                                  .map((color) =>
+                                                      color.withOpacity(1))
+                                                  .toList(),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      swapAnimationCurve: Curves.linear),
                                 ),
                               )
                             ],
